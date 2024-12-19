@@ -1,0 +1,39 @@
+version: '3.7'
+
+services:
+    backend:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        networks:
+            - my-network
+        depends_on:
+            - database
+        environment:
+            SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/mydatabase
+            SPRING_DATASOURCE_USERNAME: myuser
+            SPRING_DATASOURCE_PASSWORD: mysecurepassword
+
+    database:
+        image: postgres:latest
+        networks:
+            - my-network
+        environment:
+            POSTGRES_USER: myuser
+            POSTGRES_PASSWORD: password
+            POSTGRES_DB: mydatabase
+
+    httpd:
+        image: nginx:alpine
+        ports:
+            - "8000:80" 
+        networks:
+            - my-network
+        depends_on:
+            - backend
+        volumes:
+            - ./nginx.conf:/etc/nginx/nginx.conf # Custom reverse proxy configuration
+            - ./frontend:/usr/share/nginx/html # Optional: Serve static front-end files
+
+networks:
+    my-network:
